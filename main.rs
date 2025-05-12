@@ -1,4 +1,5 @@
 use std::env;
+use std::cmp;
 use regex::Regex;
 
 #[derive(Debug)]
@@ -42,14 +43,23 @@ fn validate(parsed_expressions: &Vec<EXPR>) -> Result<(), String> {
 	}
 
 	let mut equal_count = 0;
+	let mut x2_count = 0;
+	let mut x1_count = 0;
+	let mut x0_count = 0;
 
 	for i in 0..parsed_expressions.len() {
-		match &parsed_expressions[i] {
+		match parsed_expressions[i] {
 			EXPR::Sign('=') => {
 				equal_count += 1;
 				if equal_count > 1 {
 					return Err("Error: Multiple '=' signs found.".to_string());
 				}
+				if x2_count > 1 || x1_count > 1 || x0_count > 1 {
+					return Err("Error: Multiple 'X^N' terms found.".to_string());
+				}
+				x2_count = 0;
+				x1_count = 0;
+				x0_count = 0;
 			}
 			EXPR::Sign(_) => {
 				if i > 0 {
@@ -68,7 +78,7 @@ fn validate(parsed_expressions: &Vec<EXPR>) -> Result<(), String> {
 					}
 				}
 			}
-			EXPR::Exponent(_) => {
+			EXPR::Exponent(exp) => {
 				if i > 0 {
 					match parsed_expressions[i - 1] {
 						EXPR::Variable(_) | EXPR::Exponent(_) => {
@@ -77,13 +87,41 @@ fn validate(parsed_expressions: &Vec<EXPR>) -> Result<(), String> {
 						_ => {}
 					}
 				}
+				match exp {
+					2 => x2_count += 1,
+					1 => x1_count += 1,
+					0 => x0_count += 1,
+					_ => {}
+				}
 			}
 		}
 	}
+
+	if x2_count > 1 || x1_count > 1 || x0_count > 1 {
+		return Err("Error: Multiple 'X^N' terms found.".to_string());
+	}
+
 	Ok(())
 }
 
-fn computor() {
+fn degree(parsed_expressions: &Vec<EXPR>) -> i8
+{
+	let mut degree = 0;
+
+	for elem in parsed_expressions {
+		match elem {
+			EXPR::Exponent(exp) => {
+				degree = cmp::max(degree, *exp);
+			}
+			_ => {}
+		}
+	}
+
+	return degree
+}
+
+fn computor()
+{
 	let arg: Vec<String> = env::args().collect();
 	if arg.len() != 2 {
 		println!("Usage: computor <expression>");
@@ -101,6 +139,8 @@ fn computor() {
 		eprintln!("{}", err);
 		return;
 	}
+
+	println!("{}", degree(&parsed_expressions));
 
 	println!("Expression is valid.");
 }
