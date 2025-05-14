@@ -33,34 +33,44 @@ fn coefficient(string: String) -> Result<f64, String>
 	cleaned_string.parse::<f64>().map_err(|e| e.to_string())
 }
 
-fn decompose(parsed: Vec<String>) -> Result<[f64; 3], String>
+fn decompose(left: Vec<String>, right: Vec<String>) -> Result<[f64; 3], String>
 {
 	let mut a: f64 = 0.0;
 	let mut b: f64 = 0.0;
 	let mut c: f64 = 0.0;
 
-	for elem in parsed
-	{
-		if elem.find("X^2").is_some()
-		{
-			a = match coefficient(elem)
-			{
+	for elem in left {
+		if elem.find("X^2").is_some() {
+			a += match coefficient(elem) {
+				Ok(value) => value,
+				Err(err) => return Err(err),
+			};
+		} else if elem.find("X^1").is_some() {
+			b += match coefficient(elem) {
+				Ok(value) => value,
+				Err(err) => return Err(err),
+			};
+		} else {
+			c += match coefficient(elem) {
 				Ok(value) => value,
 				Err(err) => return Err(err),
 			};
 		}
-		else if elem.find("X^1").is_some()
-		{
-			b = match coefficient(elem)
-			{
+	}
+
+	for elem in right {
+		if elem.find("X^2").is_some() {
+			a -= match coefficient(elem) {
 				Ok(value) => value,
 				Err(err) => return Err(err),
 			};
-		}
-		else
-		{
-			c += match coefficient(elem)
-			{
+		} else if elem.find("X^1").is_some() {
+			b -= match coefficient(elem) {
+				Ok(value) => value,
+				Err(err) => return Err(err),
+			};
+		} else {
+			c -= match coefficient(elem) {
 				Ok(value) => value,
 				Err(err) => return Err(err),
 			};
@@ -72,7 +82,7 @@ fn decompose(parsed: Vec<String>) -> Result<[f64; 3], String>
 
 fn degree(coeff: [f64; 3]) -> i8
 {
-	if coeff[2] != 0.
+	if coeff[0] != 0.
 	{
 		return 2
 	}
@@ -89,7 +99,7 @@ fn solve(a: f64, b: f64, c: f64, degree: i8)
 	{
 		if c == 0.
 		{
-			println!("Equality");
+			println!("Any real number is a solution.");
 		}
 		else
 		{
@@ -102,7 +112,26 @@ fn solve(a: f64, b: f64, c: f64, degree: i8)
 	}
 	else
 	{
-		// let delta: f64 = b.powf(2.) - 4. * a * c;
+		let delta: f64 = b.powf(2.) - 4. * a * c;
+
+		if delta > 0.
+		{
+			println!("Discriminant is strictly positive, the two solutions are:");
+			let x1 = (-b - delta.sqrt()) / (2. * a);
+			let x2 = (-b + delta.sqrt()) / (2. * a);
+			println!("{}\n{}", x1, x2);
+		}
+		else if delta == 0.
+		{
+			println!("The solution is:\n{}", -b / (2. * a));
+		}
+		else
+		{
+			println!("Discriminant is strictly negative, the two complex solutions are:");
+			let real = -b / (2. * a);
+			let imaginary = (-delta).sqrt() / (2. * a);
+			println!("{} + {}i\n{} - {}i", real, imaginary, real, imaginary);
+		}
 	}
 }
 
@@ -124,9 +153,9 @@ fn computor()
 		return;
 	}
 
-	let (left, _) = parsed.unwrap();
+	let (left, right) = parsed.unwrap();
 
-	let decomposed = decompose(left);
+	let decomposed = decompose(left, right);
 
 	if decomposed.is_err() {
 		println!("{}", decomposed.unwrap_err());
@@ -138,6 +167,7 @@ fn computor()
 	let degree = degree(coeffs);
 
 	println!("Polynomial degree: {}", degree);
+	println!("Coeffs: {:?}", coeffs);
 	solve(coeffs[0], coeffs[1], coeffs[2], degree);
 }
 
