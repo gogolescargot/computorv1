@@ -1,5 +1,7 @@
 use std::env;
 
+mod test;
+
 fn parse(expression: &String) -> Result<(Vec<String>, Vec<String>), String> {
 	let clean_expression = expression.replace("-", "+-").replace(" ", "");
 
@@ -35,58 +37,133 @@ fn coefficient(string: String) -> Result<f64, String>
 
 fn decompose(left: Vec<String>, right: Vec<String>) -> Result<[f64; 3], String>
 {
-	let mut a: f64 = 0.0;
-	let mut b: f64 = 0.0;
-	let mut c: f64 = 0.0;
+	let mut a: f64 = 0.;
+	let mut b: f64 = 0.;
+	let mut c: f64 = 0.;
 
-	for elem in left {
-		if elem.find("X^2").is_some() {
-			a += match coefficient(elem) {
-				Ok(value) => value,
-				Err(err) => return Err(err),
-			};
-		} else if elem.find("X^1").is_some() {
-			b += match coefficient(elem) {
-				Ok(value) => value,
-				Err(err) => return Err(err),
-			};
-		} else {
-			c += match coefficient(elem) {
+	for elem in left
+	{
+		if elem.find("X^2").is_some()
+		{
+			a += match coefficient(elem)
+			{
 				Ok(value) => value,
 				Err(err) => return Err(err),
 			};
 		}
+		else if elem.find("X^1").is_some()
+		{
+			b += match coefficient(elem)
+			{
+				Ok(value) => value,
+				Err(err) => return Err(err),
+			};
+		}
+		else if elem.find("X^0").is_some()
+		{
+			c += match coefficient(elem)
+			{
+				Ok(value) => value,
+				Err(err) => return Err(err),
+			};
+		}
+		else if elem.find("X^").is_some()
+		{
+			return Err(format!("Error: Unsupported polynomial term: '{}'", elem))
+		}
+		else if elem != "0"
+		{
+			return Err(format!("Error: Unsupported expression: '{}'", elem))
+		}
 	}
 
 	for elem in right {
-		if elem.find("X^2").is_some() {
-			a -= match coefficient(elem) {
+		if elem.find("X^2").is_some()
+		{
+			a -= match coefficient(elem)
+			{
 				Ok(value) => value,
 				Err(err) => return Err(err),
 			};
-		} else if elem.find("X^1").is_some() {
-			b -= match coefficient(elem) {
+		}
+		else if elem.find("X^1").is_some()
+		{
+			b -= match coefficient(elem)
+			{
 				Ok(value) => value,
 				Err(err) => return Err(err),
 			};
-		} else {
-			c -= match coefficient(elem) {
+		}
+		else if elem.find("X^0").is_some() {
+			c -= match coefficient(elem)
+			{
 				Ok(value) => value,
 				Err(err) => return Err(err),
 			};
+		}
+		else if elem.find("X^").is_some()
+		{
+			return Err(format!("Error: Unsupported polynomial term: '{}'", elem))
+		}
+		else if elem != "0"
+		{
+			return Err(format!("Error: Unsupported expression: '{}'", elem))
 		}
 	}
 
 	Ok([a, b, c])
 }
 
-fn degree(coeff: [f64; 3]) -> i8
+fn reduced(&coeffs: &[f64; 3])
 {
-	if coeff[0] != 0.
+	print!("Reduced form: ");
+	let mut first = true;
+	for (i, coeff) in coeffs.iter().enumerate()
+	{
+		if *coeff < 0.
+		{
+			print!("- ");
+		}
+		else if *coeff > 0. && !first
+		{
+			print!("+ ");
+		}
+		if *coeff == 1. || *coeff == -1.
+		{
+			match i
+			{
+				2 => {},
+				1 => {print!("X ");},
+				_ => {print!("X^{} ", 2 - i);}
+			}
+			first = false;
+		}
+		else if *coeff != 0.
+		{
+			match i
+			{
+				2 => {print!("{} ", coeff.abs());},
+				1 => {print!("{} * X ", coeff.abs());},
+				_ => {print!("{} * X^{} ", coeff.abs(), 2 - i);}
+			}
+			first = false;
+		}
+		
+	}
+	if first
+	{
+		print!("0 ");
+	}
+	println!("= 0");
+}
+
+fn degree(coeffs: [f64; 3]) -> i8
+{
+	if coeffs[0] != 0.
 	{
 		return 2
 	}
-	if coeff[1] != 0.
+	if coeffs[1] != 0.
 	{
 		return 1
 	}
@@ -139,7 +216,8 @@ fn computor()
 {
 	let arg: Vec<String> = env::args().collect();
 
-	if arg.len() != 2 {
+	if arg.len() != 2
+	{
 		println!("Usage: computor <expression>");
 		return;
 	}
@@ -148,7 +226,8 @@ fn computor()
 
 	let parsed = parse(expression);
 
-	if parsed.is_err() {
+	if parsed.is_err()
+	{
 		println!("{}", parsed.unwrap_err());
 		return;
 	}
@@ -157,17 +236,20 @@ fn computor()
 
 	let decomposed = decompose(left, right);
 
-	if decomposed.is_err() {
+	if decomposed.is_err()
+	{
 		println!("{}", decomposed.unwrap_err());
 		return;
 	}
 
 	let coeffs = decomposed.unwrap();
 
+	reduced(&coeffs);
+
 	let degree = degree(coeffs);
 
 	println!("Polynomial degree: {}", degree);
-	println!("Coeffs: {:?}", coeffs);
+	// println!("Coeffs: {:?}", coeffs);
 	solve(coeffs[0], coeffs[1], coeffs[2], degree);
 }
 

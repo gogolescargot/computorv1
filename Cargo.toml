@@ -5,7 +5,7 @@ edition = "2021"
 
 [[bin]]
 name = "computorv1"
-path = "main.rs"
+path = "src/main.rs"
 
 [dependencies]
 num = "0.4.3"
