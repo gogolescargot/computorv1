@@ -145,7 +145,7 @@ fn solve(a: f64, b: f64, c: f64, degree: i8) {
 			println!("No solution.");
 		}
 	} else if degree == 1 {
-		println!("Solution : x = {}", -c / b);
+		println!("Solution : x = {}", -c / b + 0.);
 	} else {
 		let delta: f64 = b.powf(2.) - 4. * a * c;
 
@@ -155,10 +155,10 @@ fn solve(a: f64, b: f64, c: f64, degree: i8) {
 			let x2 = (-b + delta.sqrt()) / (2. * a);
 			println!("{}\n{}", x1, x2);
 		} else if delta == 0. {
-			println!("The solution is:\n{}", -b / (2. * a));
+			println!("The solution is:\n{}", -b / (2. * a) + 0.);
 		} else {
 			println!("Discriminant is strictly negative, the two complex solutions are:");
-			let real = -b / (2. * a);
+			let real = -b / (2. * a) + 0.;
 			let imaginary = (-delta).sqrt() / (2. * a);
 			println!("{} + {}i\n{} - {}i", real, imaginary, real, imaginary);
 		}
