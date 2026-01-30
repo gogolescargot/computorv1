@@ -1,6 +1,8 @@
-use std::env;
-
 mod test;
+mod utils;
+
+use std::env;
+use utils::{absolute, sqrt_newton};
 
 fn parse(expression: &String) -> Result<(Vec<String>, Vec<String>), String> {
 	let clean_expression = expression.replace("-", "+-").replace(" ", "");
@@ -109,13 +111,13 @@ fn reduced(&coeffs: &[f64; 3]) {
 		} else if *coeff != 0. {
 			match i {
 				2 => {
-					print!("{} ", coeff.abs());
+					print!("{} ", absolute(*coeff));
 				}
 				1 => {
-					print!("{} * X ", coeff.abs());
+					print!("{} * X ", absolute(*coeff));
 				}
 				_ => {
-					print!("{} * X^{} ", coeff.abs(), 2 - i);
+					print!("{} * X^{} ", absolute(*coeff), 2 - i);
 				}
 			}
 			first = false;
@@ -147,19 +149,19 @@ fn solve(a: f64, b: f64, c: f64, degree: i8) {
 	} else if degree == 1 {
 		println!("Solution : x = {}", -c / b + 0.);
 	} else {
-		let delta: f64 = b.powf(2.) - 4. * a * c;
+		let delta: f64 = (b * b) - 4. * a * c;
 
 		if delta > 0. {
 			println!("Discriminant is strictly positive, the two solutions are:");
-			let x1 = (-b - delta.sqrt()) / (2. * a);
-			let x2 = (-b + delta.sqrt()) / (2. * a);
+			let x1 = (-b - sqrt_newton(delta)) / (2. * a);
+			let x2 = (-b + sqrt_newton(delta)) / (2. * a);
 			println!("{}\n{}", x1, x2);
 		} else if delta == 0. {
 			println!("The solution is:\n{}", -b / (2. * a) + 0.);
 		} else {
 			println!("Discriminant is strictly negative, the two complex solutions are:");
 			let real = -b / (2. * a) + 0.;
-			let imaginary = (-delta).sqrt() / (2. * a);
+			let imaginary = sqrt_newton(-delta) / (2. * a);
 			println!("{} + {}i\n{} - {}i", real, imaginary, real, imaginary);
 		}
 	}
