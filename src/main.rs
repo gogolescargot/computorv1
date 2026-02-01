@@ -90,7 +90,7 @@ fn decompose(left: Vec<String>, right: Vec<String>) -> Result<[f64; 3], String> 
 
 fn reduced(&coeffs: &[f64; 3]) {
 	print!("Reduced form: ");
-	let mut first = true;
+	let mut first: bool = true;
 	for (i, coeff) in coeffs.iter().enumerate() {
 		if *coeff < 0. {
 			print!("- ");
@@ -99,7 +99,9 @@ fn reduced(&coeffs: &[f64; 3]) {
 		}
 		if *coeff == 1. || *coeff == -1. {
 			match i {
-				2 => {}
+				2 => {
+					print!("1 ");
+				}
 				1 => {
 					print!("X ");
 				}
@@ -157,7 +159,10 @@ fn solve(a: f64, b: f64, c: f64, degree: i8) {
 			let x2 = (-b + sqrt_newton(delta)) / (2. * a);
 			println!("{}\n{}", x1, x2);
 		} else if delta == 0. {
-			println!("The solution is:\n{}", -b / (2. * a) + 0.);
+			println!(
+				"Discriminant is zero, the solution is:\n{}",
+				-b / (2. * a) + 0.
+			);
 		} else {
 			println!("Discriminant is strictly negative, the two complex solutions are:");
 			let real = -b / (2. * a) + 0.;

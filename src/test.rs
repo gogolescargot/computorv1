@@ -37,7 +37,7 @@ fn test_case_1() {
 fn test_case_2() {
 	run_test(
 		"5 * X^0 + 4 * X^1 = 4 * X^0",
-		"Reduced form: 4 * X + = 0\nPolynomial degree: 1\nSolution : x = -0.25",
+		"Reduced form: 4 * X + 1 = 0\nPolynomial degree: 1\nSolution : x = -0.25",
 	);
 }
 
@@ -69,6 +69,6 @@ fn test_case_5() {
 fn test_case_6() {
 	run_test(
 		"1 * X^0 + 2 * X^1 + 5 * X^2 = 0",
-		"Reduced form: 5 * X^2 + 2 * X + = 0\nPolynomial degree: 2\nDiscriminant is strictly negative, the two complex solutions are:\n-0.2 + 0.4i\n-0.2 - 0.4i"
+		"Reduced form: 5 * X^2 + 2 * X + 1 = 0\nPolynomial degree: 2\nDiscriminant is strictly negative, the two complex solutions are:\n-0.2 + 0.4i\n-0.2 - 0.4i"
 );
 }
